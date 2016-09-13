@@ -75,135 +75,137 @@ def print_path_maze(grid):
 
 
 # init maze with food pellets laid out
+pellet = 1.
+blank = -1.
 def get_maze():
 
     grid = np.zeros((32, 32))
 
     for i in range(0, 32):
         for j in range(0, 32):
-            grid[i][j] = -1.
+            grid[i][j] = blank
 
-    grid[0,0] = 1.
-    grid[0,1] = 1.
-    grid[0,2] = 1.  
-    grid[0,3] = 1.
+    grid[0,0] = pellet
+    grid[0,1] = pellet
+    grid[0,2] = pellet
+    grid[0,3] = pellet
 
-    grid[1,3] = 1.
-    grid[2,3] = 1.
-    grid[3,3] = 1.
-    grid[4,3] = 1.
-    grid[5,3] = 1.
+    grid[1,3] = pellet
+    grid[2,3] = pellet
+    grid[3,3] = pellet
+    grid[4,3] = pellet
+    grid[5,3] = pellet
 
-    grid[5,4] = 1.
-    grid[5,5] = 1.
-    grid[5,6] = 1.
+    grid[5,4] = pellet
+    grid[5,5] = pellet
+    grid[5,6] = pellet
 
-    grid[5,8] = 1.
-    grid[5,9] = 1.
-    grid[5,10] = 1.
-    grid[5,11] = 1.
-    grid[5,12] = 1.
+    grid[5,8] = pellet
+    grid[5,9] = pellet
+    grid[5,10] = pellet
+    grid[5,11] = pellet
+    grid[5,12] = pellet
 
-    grid[6,12] = 1.
-    grid[7,12] = 1.
-    grid[8,12] = 1.
-    grid[9,12] = 1.
-    grid[10,12] = 1.
+    grid[6,12] = pellet
+    grid[7,12] = pellet
+    grid[8,12] = pellet
+    grid[9,12] = pellet
+    grid[10,12] = pellet
 
-    grid[12,12] = 1.
-    grid[13,12] = 1.
-    grid[14,12] = 1.
-    grid[15,12] = 1.
+    grid[12,12] = pellet
+    grid[13,12] = pellet
+    grid[14,12] = pellet
+    grid[15,12] = pellet
 
-    grid[18,12] = 1.
-    grid[19,12] = 1.
-    grid[20,12] = 1.
-    grid[21,12] = 1.
-    grid[22,12] = 1.
-    grid[23,12] = 1.
+    grid[18,12] = pellet
+    grid[19,12] = pellet
+    grid[20,12] = pellet
+    grid[21,12] = pellet
+    grid[22,12] = pellet
+    grid[23,12] = pellet
 
-    grid[24,11] = 1.
-    grid[24,10] = 1.
-    grid[24,9] = 1.
-    grid[24,8] = 1.
-    grid[24,7] = 1.
+    grid[24,11] = pellet
+    grid[24,10] = pellet
+    grid[24,9] = pellet
+    grid[24,8] = pellet
+    grid[24,7] = pellet
 
-    grid[24,4] = 1.
-    grid[24,3] = 1.
+    grid[24,4] = pellet
+    grid[24,3] = pellet
 
-    grid[25,1] = 1.
-    grid[26,1] = 1.
-    grid[27,1] = 1.
-    grid[28,1] = 1.
+    grid[25,1] = pellet
+    grid[26,1] = pellet
+    grid[27,1] = pellet
+    grid[28,1] = pellet
 
-    grid[30,2] = 1.
-    grid[30,3] = 1.
-    grid[30,4] = 1.
-    grid[30,5] = 1.
+    grid[30,2] = pellet
+    grid[30,3] = pellet
+    grid[30,4] = pellet
+    grid[30,5] = pellet
 
-    grid[29,7] = 1.
-    grid[28,7] = 1.
+    grid[29,7] = pellet
+    grid[28,7] = pellet
 
-    grid[27,8] = 1.
-    grid[27,9] = 1.
-    grid[27,10] = 1.
-    grid[27,11] = 1.
-    grid[27,12] = 1.
-    grid[27,13] = 1.
-    grid[27,14] = 1.
+    grid[27,8] = pellet
+    grid[27,9] = pellet
+    grid[27,10] = pellet
+    grid[27,11] = pellet
+    grid[27,12] = pellet
+    grid[27,13] = pellet
+    grid[27,14] = pellet
 
-    grid[26,16] = 1.
-    grid[25,16] = 1.
-    grid[24,16] = 1.
+    grid[26,16] = pellet
+    grid[25,16] = pellet
+    grid[24,16] = pellet
 
-    grid[21,16] = 1.
+    grid[21,16] = pellet
 
-    grid[19,16] = 1.
-    grid[18,16] = 1.
-    grid[17,16] = 1.
+    grid[19,16] = pellet
+    grid[18,16] = pellet
+    grid[17,16] = pellet
 
-    grid[16,17] = 1.
+    grid[16,17] = pellet
 
-    grid[15,20] = 1.
-    grid[14,20] = 1.
+    grid[15,20] = pellet
+    grid[14,20] = pellet
 
-    grid[11,20] = 1.
-    grid[10,20] = 1.
-    grid[9,20] = 1.
-    grid[8,20] = 1.
+    grid[11,20] = pellet
+    grid[10,20] = pellet
+    grid[9,20] = pellet
+    grid[8,20] = pellet
 
-    grid[5,21] = 1.
-    grid[5,22] = 1.
+    grid[5,21] = pellet
+    grid[5,22] = pellet
 
-    grid[4,24] = 1.
-    grid[3,24] = 1.
+    grid[4,24] = pellet
+    grid[3,24] = pellet
 
-    grid[2,25] = 1.
-    grid[2,26] = 1.
-    grid[2,27] = 1.
+    grid[2,25] = pellet
+    grid[2,26] = pellet
+    grid[2,27] = pellet
 
-    grid[3,29] = 1.
-    grid[4,29] = 1.
+    grid[3,29] = pellet
+    grid[4,29] = pellet
 
-    grid[6,29] = 1.
+    grid[6,29] = pellet
 
-    grid[9,29] = 1.
+    grid[9,29] = pellet
 
-    grid[12,29] = 1.
+    grid[12,29] = pellet
 
-    grid[14,28] = 1.
-    grid[14,27] = 1.
-    grid[14,26] = 1.
+    grid[14,28] = pellet
+    grid[14,27] = pellet
+    grid[14,26] = pellet
 
-    grid[15,23] = 1.
+    grid[15,23] = pellet
 
-    grid[18,24] = 1.
+    grid[18,24] = pellet
 
-    grid[19,27] = 1.
+    grid[19,27] = pellet
 
-    grid[22,26] = 1.
+    grid[22,26] = pellet
 
-    grid[23,23] = 1.
+    grid[23,23] = pellet
 
 
     return grid.flatten()
