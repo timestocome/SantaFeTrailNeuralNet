@@ -12,4 +12,5 @@ Still needs biases, probably different activation ( Relu ), gradient, and maybe 
 
 This is in Python and Numpy to make it easier to understand code and use as a toy problem
 
+Work in progress, planning another pass, or more, on this problem and smarter networks.
 
