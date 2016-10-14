@@ -14,3 +14,6 @@ This is in Python and Numpy to make it easier to understand code and use as a to
 
 Work in progress, planning another pass, or more, on this problem and smarter networks.
 
+Working through https://github.com/dennybritz/reinforcement-learning/blob/master/DP/Policy%20Evaluation.ipynb
+and adapting it to the SantaFe Ant Trail Problem as I go through the examples.
+
