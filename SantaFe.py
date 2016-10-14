@@ -1,374 +1,326 @@
-#/python
-
-# https://github.com/timestocome
-
-# Santa Fe Ant Trail with Reinforcement Learning
-# http://www0.cs.ucl.ac.uk/staff/ucacbbl/bloat_csrp-97-29/node2.html
 # https://en.wikipedia.org/wiki/Santa_Fe_Trail_problem
 # https://github.com/timestocome
 
+# adapted from https://github.com/dennybritz/reinforcement-learning gridworld example
 
 
-# starter code 
-# https://gist.github.com/karpathy/a4166c7fe253700972fcbc77e4ea32c5
-# http://karpathy.github.io/2016/05/31/rl/
+    # SantaFe Ant world environment 
+    # 32 x 32 grid with 90, food pellets
+    # minimum path requires 50, blank squares to be crossed
+    # minimum travel time is 90, + 50, = 140, steps
+    # we need 1 d array for input to network
+    # begin top left, finish bottom right on last one
 
-
-
-
-
-# description
-# 32 x 32 grid with 90 food pellets
-# minimum path requires 50 blank squares to be crossed
-# minimum travel time is 90 + 50 = 140 steps
-
-
-# to do
-# put ant on board instead of tracking location separately?
-# add bias, will this help vanishing weights?
-# check back propagation doesn't have matrices twisted around
-# done at end of maze or every time ant locates food?
-# weights vanishing 
-# .... try relu? instead of sig, if change need to change grad calc?
-# .... try 0s instead of -1 in maze?
+    # T 1 1 1 . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+    # . . . 1 . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+    # . . . 1 . . . . . . . . . . . . . . . . . . . . . 1 1 1 . . . .
+    # . . . 1 . . . . . . . . . . . . . . . . . . . . 1 . . . . 1 . .
+    # . . . 1 . . . . . . . . . . . . . . . . . . . . 1 . . . . 1 . .
+    # . . . 1 1 1 1 . 1 1 1 1 1 . . . . . . . . 1 1 . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . . . . . . . . . . 1 . .
+    # . . . . . . . . . . . . 1 . . . . . . . . . . . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . 1 . . . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . 1 . . . . . . . . 1 . .
+    # . . . . . . . . . . . . 1 . . . . . . . 1 . . . . . . . . . . .
+    # . . . . . . . . . . . . . . . . . . . . 1 . . . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . . . . . . . . . . 1 . .
+    # . . . . . . . . . . . . 1 . . . . . . . . . . . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . 1 . . . . . 1 1 1 . . .
+    # . . . . . . . . . . . . 1 . . . . . . . 1 . . 1 . . . . . . . .
+    # . . . . . . . . . . . . . . . . . 1 . . . . . . . . . . . . . .
+    # . . . . . . . . . . . . . . . . 1 . . . . . . . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . 1 . . . . . . . 1 . . . . . . .
+    # . . . . . . . . . . . . 1 . . . 1 . . . . . . . . . . 1 . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . . . . . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . 1 . . . . . . . . . . . . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . . . . . . . 1 . . . . .
+    # . . . . . . . . . . . . 1 . . . . . . . . . . T . . . . . . . .
+    # . . . 1 1 . . 1 1 1 1 1 . . . . 1 . . . . . . . . . . . . . . .
+    # . 1 . . . . . . . . . . . . . . 1 . . . . . . . . . . . . . . .
+    # . 1 . . . . . . . . . . . . . . 1 . . . . . . . . . . . . . . .
+    # . 1 . . . . . . 1 1 1 1 1 1 1 . . . . . . . . . . . . . . . . .
+    # . 1 . . . . . 1 . . . . . . . . . . . . . . . . . . . . . . . .
+    # . . . . . . . 1 . . . . . . . . . . . . . . . . . . . . . . . .
+    # . . 1 1 1 1 . . . . . . . . . . . . . . . . . . . . . . . . . .
+    # . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
 
 
 import numpy as np
-import pickle
-import SantaFeMaze 
-
-
-
-########################################################################################################
-# tweak network parameters here:
-
-batch_size = 10               # every how many episodes to do a param update?
-learning_rate = 1e-4          # keeps weights from changing too quickly
-gamma = 0.99                  # discount factor for reward, 1 == infinite look back, 0 this reward is only one that matters
-decay_rate = 0.99             # decay factor leaky sum of grad^2
-
-resume = False                # resume from previous checkpoint?
-render = False                # screen display game move
-
-number_updates_between_saves = 10  # how often to save game weights etc?
-max_episodes = 10             # end the training loop after how many games?, set to 500 once things are setup
-
-points = 0.                   # what we start with
-
-max_moves = 600               # we've wandered lost for too long
-max_rewards = 40              # we've won --- this should be 90 pellets - 50 blanks = 40 for no errors through maze
-
-######  constants ############################################################
-
-height = 32                   # maze dimensions
-width = 32
-
-n_input = height * width      # input dimensionality i.e. game board size
-n_output = 3                  # move forward? left? right?
-n_hidden = 64                 # number of hidden layer neurons
-n_input_weights = n_input * n_hidden
-n_output_weights = n_hidden * n_output
-
-not_zero = 0.000001
-
-
-
-######## reload saved state or init new ##########################################
-
-if resume:
-  model = pickle.load(open('save.p', 'rb'))
-else:
-  # "Xavier" initialization http://deepdish.io/2015/02/24/network-initialization/
-  model = {}
-  model['W1'] = np.random.randn(n_hidden, n_input) / np.sqrt(n_input)                      
-  model['W2'] = np.random.randn(n_output, n_hidden) / np.sqrt(n_hidden)
-  
-
-grad_buffer = { k : np.zeros_like(v) for k, v in model.items() }     # update buffers that add up gradients over a batch
-rms_prop_cache = { k : np.zeros_like(v) for k, v in model.items() }  # root mean square propagation memory
-
-
-# set up SantaFe Ant Maze 
-maze = SantaFeMaze.get_maze()
-
-
-# food pellet setup
-max_pellets = sum(maze.flatten())               # count number of food pellets available
-points = 1.                                     # we begin maze on top of a food pellet 
-maze[0] = 0.                                    # remove this pellet from maze
-food_collected = 1                              # ant starts in a food location at (0, 0)
-
-# tracking ant setup
-previous_maze = SantaFeMaze.get_maze()          # used in computing the differences between frames
-current_maze = SantaFeMaze.get_maze()
-
-
-index = 0                                       # starting location
-x, y = SantaFeMaze.get_rc(index)
-d = np.random.randint(3)                     # random starting direction
-print(x, y, d)
-
-
-# track progress setup
-rewards_sum = 0.
-episode_number = 0.
-done = 0
-move_number = 0
-
-ins, hs, output_error, rewards = [],[],[],[]    # save input, hidden output, output, rewards
-hidden_output = np.zeros(n_hidden)
+import sys
+from gym.envs.toy_text import discrete
 
 
 
 
-# moving ant setup
-action = np.zeros(n_output)                     # move forward, rotate right, rotate left
-action_probability = np.zeros(n_output)
-
-# setup user views
-path_maze = SantaFeMaze.get_maze()              # used for visuals
-
-
-######## network helper functions ###############################################################################
-
-def sigmoid(x): 
-  return 1.0 / (1.0 + np.exp(-x))                                    # sigmoid "squashing" function to interval [0,1]
+UP = 0,
+RIGHT = 1
+DOWN = 2
+LEFT = 3
 
 
 
 
 
-# take 1D float array of rewards and compute discounted reward 
-def discount_rewards(r):
+pellet = 1.
+blank = -1.
+def get_maze():
 
-  # init variables
-  discounted_r = np.zeros_like(r)
-  running_add = 0
+    grid = np.zeros((32, 32))
 
-  # work backwards for each move
-  for t in reversed(range(0, r.size)):
+    for i in range(0, 32):
+        for j in range(0, 32):
+            grid[i][j] = blank
 
-    # game ends with 1, -1 win/lose, 0 is on going game
-    if r[t] != 0: running_add = 0                     
+    grid[0,0] = pellet
+    grid[0,1] = pellet
+    grid[0,2] = pellet
+    grid[0,3] = pellet
 
-    running_add = running_add * gamma + r[t]       # discount rewards over time
-    discounted_r[t] = running_add                  # copy to time step
+    grid[1,3] = pellet
+    grid[2,3] = pellet
+    grid[3,3] = pellet
+    grid[4,3] = pellet
+    grid[5,3] = pellet
 
-  return discounted_r
+    grid[5,4] = pellet
+    grid[5,5] = pellet
+    grid[5,6] = pellet
+
+    grid[5,8] = pellet
+    grid[5,9] = pellet
+    grid[5,10] = pellet
+    grid[5,11] = pellet
+    grid[5,12] = pellet
+
+    grid[6,12] = pellet
+    grid[7,12] = pellet
+    grid[8,12] = pellet
+    grid[9,12] = pellet
+    grid[10,12] = pellet
+
+    grid[12,12] = pellet
+    grid[13,12] = pellet
+    grid[14,12] = pellet
+    grid[15,12] = pellet
+
+    grid[18,12] = pellet
+    grid[19,12] = pellet
+    grid[20,12] = pellet
+    grid[21,12] = pellet
+    grid[22,12] = pellet
+    grid[23,12] = pellet
+
+    grid[24,11] = pellet
+    grid[24,10] = pellet
+    grid[24,9] = pellet
+    grid[24,8] = pellet
+    grid[24,7] = pellet
+
+    grid[24,4] = pellet
+    grid[24,3] = pellet
+
+    grid[25,1] = pellet
+    grid[26,1] = pellet
+    grid[27,1] = pellet
+    grid[28,1] = pellet
+
+    grid[30,2] = pellet
+    grid[30,3] = pellet
+    grid[30,4] = pellet
+    grid[30,5] = pellet
+
+    grid[29,7] = pellet
+    grid[28,7] = pellet
+
+    grid[27,8] = pellet
+    grid[27,9] = pellet
+    grid[27,10] = pellet
+    grid[27,11] = pellet
+    grid[27,12] = pellet
+    grid[27,13] = pellet
+    grid[27,14] = pellet
+
+    grid[26,16] = pellet
+    grid[25,16] = pellet
+    grid[24,16] = pellet
+
+    grid[21,16] = pellet
+
+    grid[19,16] = pellet
+    grid[18,16] = pellet
+    grid[17,16] = pellet
+
+    grid[16,17] = pellet
+
+    grid[15,20] = pellet
+    grid[14,20] = pellet
+
+    grid[11,20] = pellet
+    grid[10,20] = pellet
+    grid[9,20] = pellet
+    grid[8,20] = pellet
+
+    grid[5,21] = pellet
+    grid[5,22] = pellet
+
+    grid[4,24] = pellet
+    grid[3,24] = pellet
+
+    grid[2,25] = pellet
+    grid[2,26] = pellet
+    grid[2,27] = pellet
+
+    grid[3,29] = pellet
+    grid[4,29] = pellet
+
+    grid[6,29] = pellet
+
+    grid[9,29] = pellet
+
+    grid[12,29] = pellet
+
+    grid[14,28] = pellet
+    grid[14,27] = pellet
+    grid[14,26] = pellet
+
+    grid[15,23] = pellet
+
+    grid[18,24] = pellet
+
+    grid[19,27] = pellet
+
+    grid[22,26] = pellet
+
+    grid[23,23] = pellet
+
+
+    return grid.flatten()
 
 
 
+maze = get_maze()
 
-# forward propagation
-# push changes in game board each cycle through network
-def policy_forward(diff_maze):
+def get_reward(i):
+    
+    reward = maze[i]
+    if maze[i] == 1: maze[i] = -1       # remove food pellet
 
-  i = diff_maze.flatten()                           # convert maze to 1 dimension
-
-  h = np.dot(model['W1'], i)                        # hidden layer = x * Wi
-  h[h<0] = 0                                        # ReLU nonlinearity
-  
-  logistic_probability = np.dot(model['W2'], h)     # logistic layer = Wo * h 
-  p = sigmoid(logistic_probability)                 # smooth output with sigmoid
-
-  # first run through adds extra dimension to h, flattening it fixes this 
-  return p, h.flatten()                             # return probabilities of game positions
+    return reward
 
 
+    # You can take actions in each direction (UP=0,, RIGHT=1, DOWN=2, LEFT=3).
+    # Actions going off the edge leave you in your current state.
+    # You receive a reward of -1 at each step, that is empty, +1 at food states
+    # until all food is collected
+    
 
-# work error backwards 
-# episodes are the arrays containing the game states after each move
-def policy_backward(episodes_h, episodes_error, episodes_diff_maze):
 
-  loops = episodes_diff_maze.size/n_input
-
-  # error per output weight
-  dW2 = np.dot(episodes_h.T, episodes_error)         # error dotted with output weights
-
-  # error per hidden node2  
-  # dh = np.outer(episodes_error, model['W2'])
-  dh = np.dot(episodes_error, model['W2'])
-  dh[episodes_h < 0] = 0
+class SantaFeEnv(discrete.DiscreteEnv):
    
 
-  # error per input weight
-  episodes_i = np.reshape(episodes_diff_maze, (1024, loops))
-  dW1 = np.dot(dh.T, episodes_i.T)
-  
-  return {'W1':dW1, 'W2':dW2.T}                       # return gradients for weights
-
-
-
-
-
-
-
-############# main loop  ####################################################################
-# one step at a time work through maze keeping track of food pellets 
-# at end work errors back through probabilities board and try again
-
-# episodes are number of times to attempt to solve maze
-while episode_number < max_episodes:
-
-  
-  move_number += 1                            # keep ant from wandering forever
-
-  # #########################################################################################
-  # pick up food and move forward if food in front of ant in direction ant is facing
-  # else check the probabilities to decide on next move
-  food = SantaFeMaze.check_for_food(x, y, d, current_maze)  
-
-
-
-  # remove food, flag spot as somewhere we've been before, punish standing still
-  # update other copies of maze
-  index = SantaFeMaze.get_index(x, y)
-  current_maze[index] -= 1                  # remove food or record ant visit to cell
-  changes_maze = np.subtract(current_maze, previous_maze) # record changes in maze
-  previous_maze[index] -= 1                 # now update previous_maze 
-  path_maze[index] -= 1                     # use to view ant's travels
-
-  
-  # if food ahead move and scoop it up
-  if food == 1:
-     index, x, y = SantaFeMaze.move_ant(x, y, d)         # move to food location
-     action[0] = 1
-     points = 1.                            # track food pellets recovered
-     food_collected += 1
-
-  # no food ahead so rotate or step forward
-  else:
-    points = -1.                            # no food use -1, 0 breaks lots of calculations 
+    metadata = {'render.modes': ['human', 'ansi']}
     
-    # look at game probabilities and make a move
-    action_probability, hidden_output = policy_forward(changes_maze)          # hidden layer output, and output values
 
-    move_forward = action_probability[0]
-    rotate_left = action_probability[1]
-    rotate_right = action_probability[[2]]
+    def __init__(self, shape=[32,32]):
 
-    # the lower our action probabilities the more likely we'll try a random move    
-    # the game progresses we should become more conservative
-    go_forward = 0 if np.random.uniform() < move_forward else 1
-    if go_forward:
-        index, x, y = SantaFeMaze.move_ant(x, y, d)
-        action[0] = 1
-    else:
-        action[0] = 0
+        global max_food
+        max_food = 90
 
-    go_left = 0 if np.random.uniform() < rotate_left else 1
-    if go_left:
-      d += 1
-      if d > 3: d = 0
-      action[1] = 1
-    else:
-      action[1] = 0
+        if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
+            raise ValueError('shape argument must be a list/tuple of length 2')
 
-    go_right = 0 if np.random.uniform() < rotate_right else 1
-    if go_right:
-      d -= 1
-      if d < 0: d = 3
-      action[2] = 1
-    else:
-      action[2] = 0
-    
-    
-  #print("location (%d, %d), direction %d, rewards sum %f" % (x, y, d, rewards_sum))
-  #########################################################################################
+        self.shape = shape
 
-  # record various intermediates (needed later for backprop)
-  ins.append(changes_maze)                         # changes in game board
-  hs.append(hidden_output)                         # hidden state
+        nS = np.prod(shape)
+        nA = 32
 
-  
+        MAX_Y = shape[0]
+        MAX_X = shape[1]
 
-  # grad that encourages the action that was taken to be taken 
-  # http://cs231n.github.io/neural-networks-2/#losses 
-  output_error.append(action - action_probability)      # action taken - network recommended action
+        P = {}
+        grid = np.arange(nS).reshape(shape)
+        it = np.nditer(grid, flags=['multi_index'])
 
-  # step the environment and get new measurements
-  # observation, reward, done, info = env.step(action)  # make the move
-  rewards_sum += points                                 # add results of action into total reward
-  rewards.append(rewards_sum)                             # record reward for previous action)
-  
-  # game over ?
-  if move_number >= max_moves: 
-    done = -1
+        while not it.finished:
+            s = it.iterindex
+            y, x = it.multi_index
 
-  if rewards_sum >= max_rewards: 
-    done = 1
-  
+            P[s] = {a : [] for a in range(nA)}
 
-  # adjust weights when finding food or when game over?
-  if food == 1: print("found food")
-  if food == 1:
-  # game over
-  #if done != 0: 
+            #is_done = lambda s: s == 0 or s == (nS - 1)
+            #reward = 0.0 if is_done(s) else -1.0
 
-    done = 0
-    episode_number += 1
-    #print("***********************    Episode number", episode_number)
+            # was there still a food pellet on this spot
+            reward = get_reward(s)
+            if reward == 1: max_food -= 1
 
-    # concat all inputs, hidden states, action gradients, and rewards for this episode
-    episodes_i = np.vstack(ins)                        # inputs
-    episodes_h = np.vstack(hs)                         # hiddens
-    episodes_error = np.vstack(output_error)           # errors
-    episodes_r = np.vstack(rewards)                    # rewards
-    
-    ins, hs, output_error, rewards = [],[],[],[]       # reset array memory
+            # did we collect all the food pellets
+            if max_food <= 0: is_done = True
+            else: is_done = False
 
-    # compute the discounted reward backwards through time
-    discounted_episodes_r = discount_rewards(episodes_r)
-    
-    # standardize the rewards to be unit normal (helps control the gradient estimator variance)
-    discounted_episodes_r -= np.mean(discounted_episodes_r)
-    discounted_episodes_r /= np.std(discounted_episodes_r) 
+             # We're stuck in a terminal state
+            if is_done:
+                P[s][UP] = [(1.0, s, reward, True)]
+                P[s][RIGHT] = [(1.0, s, reward, True)]
+                P[s][DOWN] = [(1.0, s, reward, True)]
+                P[s][LEFT] = [(1.0, s, reward, True)]
 
-    episodes_error *= discounted_episodes_r     # modulate the gradient with advantage (PG magic happens right here.)
+            # Not a terminal state
+            else:
+                ns_up = s if y == 0 else s - MAX_X
+                ns_right = s if x == (MAX_X - 1) else s + 1
+                ns_down = s if y == (MAX_Y - 1) else s + MAX_X
+                ns_left = s if x == 0 else s - 1
 
-  
-    grad = policy_backward(episodes_h, episodes_error, episodes_i)        # compute gradient
-    for k in model:grad_buffer[k] += grad[k]                              # append current gradient
+                P[s][UP] = [(1.0, ns_up, reward, False)]
+                P[s][RIGHT] = [(1.0, ns_right, reward, False)]
+                P[s][DOWN] = [(1.0, ns_down, reward, False)]
+                P[s][LEFT] = [(1.0, ns_left, reward, False)]
+
+            it.iternext()
+
+
+        # Initial state distribution 
+        isd = get_maze()
+
+        # We expose the model of the environment for educational purposes
+        # This should not be used in any model-free learning algorithm
+        self.P = P
+
+        super(SantaFeEnv, self).__init__(nS, nA, P, isd)
 
 
 
-    # loop over weights
-    for key, value in model.items():
-        g = grad_buffer[key]          # gradient for this set of weights
-        rms_prop_cache[key] = decay_rate * rms_prop_cache[key] + (1 - decay_rate) * g**2 # decay gradients
-        model[key] += learning_rate * g / (np.sqrt(rms_prop_cache[key]) + 1e-5) # weights += lr * gradient / sqrt(decayed gradients)
-        grad_buffer[key] = np.zeros_like(value)                                 # reset batch gradient buffer        
 
+    def _render(self, mode='human', close=False):
+        if close:
+            return
 
-    # sanity check weights, grads
-    print("Gradients (in/out)", sum(grad['W1'].flatten()/n_input_weights), sum(grad['W2'].flatten()/n_output_weights))
-    print("Weights ( in/out )? ", sum(model['W1'].flatten()/n_input_weights), sum(model['W2'].flatten()/n_output_weights))
-    
-      
-    
-    # save every so many iterations
-    if episode_number % number_updates_between_saves == 0: pickle.dump(model, open('save.p', 'wb'))
+        outfile = StringIO() if mode == 'ansi' else sys.stdout
 
+        grid = np.arange(self.nS).reshape(self.shape)
+        it = np.nditer(grid, flags=['multi_index'])
 
-    # clean up visuals
-    print("***************************************************************************************************")
-    print("food collected %d = %.2f%%" % (food_collected, food_collected / 90. * 100.))
-    print("wandering = %.2f%%" % (rewards_sum/max_moves * 100.))
-    #print_path_maze(path_maze)
-    print("***************************************************************************************************")
+        while not it.finished:
+            s = it.iterindex
+            y, x = it.multi_index
 
-    # reset all for next attempt
-    food_collected = 0
-    rewards_sum = 0
-    move_number = 0
+            if self.s == s:
+                output = " x "
+            elif s == 0 or s == self.nS - 1:
+                output = " T "
+            else:
+                output = " o "
 
-    maze = SantaFeMaze.get_maze()                   # reset maze
-    previous_maze = SantaFeMaze.get_maze()             # used in computing the differences between frames
-    current_maze = SantaFeMaze.get_maze()
-    path_maze = SantaFeMaze.get_maze()              # used for visuals
+            if x == 0:
+                output = output.lstrip() 
+            if x == self.shape[1] - 1:
+                output = output.rstrip()
 
-    x = 0                                           # put ant back on first square
-    y = 0
+            outfile.write(output)
 
-  
+            if x == self.shape[1] - 1:
+                outfile.write("\n")
+
+            it.iternext()
