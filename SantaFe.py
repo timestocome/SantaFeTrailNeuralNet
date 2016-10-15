@@ -203,7 +203,7 @@ maze = get_maze()
 
 def get_reward(i):
     
-    reward = maze[i]
+    reward = maze[i] * 0.8
     if maze[i] == 1: maze[i] = -1       # remove food pellet
 
     return reward
@@ -224,16 +224,23 @@ class SantaFeEnv(discrete.DiscreteEnv):
 
     def __init__(self, shape=[32,32]):
 
-        global max_food
+        print("reset environment")
+
+        global max_food     # best we can hope to achieve
         max_food = 90
+
+        reward = 0
+
+        #global max_moves    # else we might wander lost forever
+        #max_moves = 1024   
 
         if not isinstance(shape, (list, tuple)) or not len(shape) == 2:
             raise ValueError('shape argument must be a list/tuple of length 2')
 
         self.shape = shape
 
-        nS = np.prod(shape)
-        nA = 32
+        nS = np.prod(shape) # number of states
+        nA = 4              # ? number actions
 
         MAX_Y = shape[0]
         MAX_X = shape[1]
@@ -242,31 +249,39 @@ class SantaFeEnv(discrete.DiscreteEnv):
         grid = np.arange(nS).reshape(shape)
         it = np.nditer(grid, flags=['multi_index'])
 
+
+
         while not it.finished:
             s = it.iterindex
             y, x = it.multi_index
 
             P[s] = {a : [] for a in range(nA)}
 
-            #is_done = lambda s: s == 0 or s == (nS - 1)
-            #reward = 0.0 if is_done(s) else -1.0
-
+           
             # was there still a food pellet on this spot
-            reward = get_reward(s)
-            if reward == 1: max_food -= 1
-
+            r = get_reward(s)
+            if r == 1: max_food -= 1
+            reward += r
+            #print("reward", reward)
+            
             # did we collect all the food pellets
             if max_food <= 0: is_done = True
             else: is_done = False
 
-             # We're stuck in a terminal state
+            # make sure we don't wander aimlessly for too long
+            #max_moves -= 1
+            #if max_moves <= 0: is_done = True
+
+            #print(is_done, s, reward, max_food)
+            
+
+            
             if is_done:
                 P[s][UP] = [(1.0, s, reward, True)]
                 P[s][RIGHT] = [(1.0, s, reward, True)]
                 P[s][DOWN] = [(1.0, s, reward, True)]
                 P[s][LEFT] = [(1.0, s, reward, True)]
 
-            # Not a terminal state
             else:
                 ns_up = s if y == 0 else s - MAX_X
                 ns_right = s if x == (MAX_X - 1) else s + 1
@@ -277,6 +292,7 @@ class SantaFeEnv(discrete.DiscreteEnv):
                 P[s][RIGHT] = [(1.0, ns_right, reward, False)]
                 P[s][DOWN] = [(1.0, ns_down, reward, False)]
                 P[s][LEFT] = [(1.0, ns_left, reward, False)]
+            
 
             it.iternext()
 
@@ -288,8 +304,8 @@ class SantaFeEnv(discrete.DiscreteEnv):
         # This should not be used in any model-free learning algorithm
         self.P = P
 
+        # reset environment
         super(SantaFeEnv, self).__init__(nS, nA, P, isd)
-
 
 
 
