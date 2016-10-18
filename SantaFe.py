@@ -53,7 +53,7 @@ from gym.envs.toy_text import discrete
 
 
 
-UP = 0,
+UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
@@ -203,7 +203,7 @@ maze = get_maze()
 
 def get_reward(i):
     
-    reward = maze[i] * 0.8
+    reward = maze[i]
     if maze[i] == 1: maze[i] = -1       # remove food pellet
 
     return reward
@@ -220,7 +220,8 @@ class SantaFeEnv(discrete.DiscreteEnv):
    
 
     metadata = {'render.modes': ['human', 'ansi']}
-    
+    numberOfPossibleActions = 4
+
 
     def __init__(self, shape=[32,32]):
 
@@ -240,7 +241,6 @@ class SantaFeEnv(discrete.DiscreteEnv):
         self.shape = shape
 
         nS = np.prod(shape) # number of states
-        nA = 4              # ? number actions
 
         MAX_Y = shape[0]
         MAX_X = shape[1]
@@ -255,15 +255,14 @@ class SantaFeEnv(discrete.DiscreteEnv):
             s = it.iterindex
             y, x = it.multi_index
 
-            P[s] = {a : [] for a in range(nA)}
+            P[s] = {a : [] for a in range(self.numberOfPossibleActions)}
 
            
             # was there still a food pellet on this spot
             r = get_reward(s)
             if r == 1: max_food -= 1
             reward += r
-            #print("reward", reward)
-            
+
             # did we collect all the food pellets
             if max_food <= 0: is_done = True
             else: is_done = False
@@ -305,7 +304,7 @@ class SantaFeEnv(discrete.DiscreteEnv):
         self.P = P
 
         # reset environment
-        super(SantaFeEnv, self).__init__(nS, nA, P, isd)
+        super(SantaFeEnv, self).__init__(nS, self.numberOfPossibleActions, P, isd)
 
 
 
