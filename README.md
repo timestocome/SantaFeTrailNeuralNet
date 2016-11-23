@@ -17,3 +17,6 @@ Work in progress, planning another pass, or more, on this problem and smarter ne
 Working through https://github.com/dennybritz/reinforcement-learning/blob/master/DP/Policy%20Evaluation.ipynb
 and adapting it to the SantaFe Ant Trail Problem as I go through the examples.
 
+Using Sutton's 'Reinforcement Learning'
+http://webdocs.cs.ualberta.ca/~sutton/book/ebook/the-book.html
+
