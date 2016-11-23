@@ -306,3 +306,7 @@ def get_direction(d):
     if d == 1: return "right"
     if d == 2: return "down"
     if d == 3: return "left"
+
+
+m = get_maze()
+print_maze(m)
