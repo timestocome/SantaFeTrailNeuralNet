@@ -59,7 +59,7 @@ print(SantaFeAntTrail.shape)
 
 # heatmap
 #fig = plt.figure(1, figsize=(24,8))
-
+"""
 #plt.subplot(131)
 plt.matshow(SantaFeAntTrail, interpolation='nearest', cmap='Blues')
 plt.xlabel("SantaFeAntTrail")
@@ -68,12 +68,12 @@ plt.savefig("SantaFeAntTrail.png")
 #plt.subplot(132)
 plt.matshow(probability, interpolation='nearest', cmap='Blues')
 plt.xlabel("Probability")
-plt.savefig("Probability_PolicyIteration.png")
-
+plt.savefig("Probability_PolicyIteration2.png")
+"""
 #plt.subplot(133)
 plt.matshow(value, interpolation='nearest', cmap='Blues')
-plt.xlabel("Value")
-plt.savefig("Value_PolicyIteration.png")
+plt.xlabel("ValueIteration")
+plt.savefig("ReshapedGridPolicy2.png")
 
 
 
