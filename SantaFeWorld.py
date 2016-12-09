@@ -47,6 +47,7 @@ maze = [
 
 
 
+
 class SantaFeEnv(discrete.DiscreteEnv):
 
     #     Santa Fe Ant Trail with Reinforcement Learning
@@ -81,20 +82,42 @@ class SantaFeEnv(discrete.DiscreteEnv):
         grid = np.arange(nS).reshape(shape)
         it = np.nditer(grid, flags=['multi_index'])
 
+        reward_maze = maze
+        reward = 0
+
         while not it.finished:
 
             s = it.iterindex
             y, x = it.multi_index
 
+
+
             P[s] = {a : [] for a in range(nA)}
 
-            is_done = lambda s: s == 0 or s == (nS - 1)
-            # reward = 0.0 if is_done(s) else -1.0
-
-            # reward for picking up food
-            reward = maze[s]
-
            
+
+            # constant state, reward for food, hit for miss
+            reward = reward_maze[s]
+
+            """
+            # remove food, punish  missed
+            if reward_maze[s] == 1:
+                reward_maze[s] = 0
+                reward = 1
+            else:
+                reward = reward_maze[s]
+
+
+            # remove food, minor hit for missing
+            if reward_maze[s] == 1: 
+                reward_maze[s] = 0 # remove food only
+                reward += 1
+            else:
+                reward -= .05
+            """
+
+            is_done = lambda s: s == 0 or s == (nS - 1)
+            
 
                   # We're stuck in a terminal state
             if is_done(s):
