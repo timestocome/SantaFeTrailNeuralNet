@@ -1,5 +1,7 @@
 # SantaFeTrailNeuralNet
-Attempt to solve SantaFe Ant Trail with Reinforcement Learning
+Using the SantaFe Ant Trail Problem as a data souce while I work through Sutton's Reinforcement Learning book.
+
+Only program left to write is a deep reinforcement version with Q_learning
 
 SantaFe Ant Trail is a well know test problem for genetic algorithms
 https://en.wikipedia.org/wiki/Santa_Fe_Trail_problem
