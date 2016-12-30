@@ -108,7 +108,7 @@ def random_action():
 training_data = np.zeros(1024+4)
 
 # reset maze ??? times
-for g in range(20):        # number of games to use for training
+for g in range(2):        # number of games to use for training
 
 # random walk through maze ??? times
     state = -1
@@ -156,19 +156,35 @@ for g in range(20):        # number of games to use for training
         reward_maze[state] = 0          # remove reward and or player mark
         reward_maze[new_state] = 2      # mark updated player location
 
+
 # delete dummy row we needed for vstack
 training_data = np.delete(training_data, 0, axis=0)
 
 
+# add column titles
+col_names = []
+for i in range(1024):
+    col_names.append(str(i))
+col_names.append("up")
+col_names.append("right")
+col_names.append("down")
+col_names.append("left")
+print("number of column names", len(col_names))
+
+data = pd.DataFrame(training_data, columns=col_names)
+print(data.shape)
+print(data.head())
+
+
+
 print("saving data")
-np.savetxt("training_data.csv", training_data)
-print("Saved data: rows, cols", len(training_data), training_data.shape)
+data.to_csv("training_data.csv")
+print("Saved data: rows, cols", data.shape)
 
 
-print("reading data")
 # test can read in file
+print("reading data")
 input = pd.read_csv("training_data.csv")
-print("read in training data", len(input))
-#print(training_vectors.head())
-
+print("input shape", input.shape)
+#print(input.head())
 
