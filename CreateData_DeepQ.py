@@ -176,7 +176,7 @@ print(data.shape)
 print(data.head())
 
 
-
+"""
 print("saving data")
 data.to_csv("training_data.csv")
 print("Saved data: rows, cols", data.shape)
@@ -187,4 +187,13 @@ print("reading data")
 input = pd.read_csv("training_data.csv")
 print("input shape", input.shape)
 #print(input.head())
+"""
 
+print("saving data")
+np.savetxt("training_data.csv", training_data)
+print("saving", training_data.shape)
+
+print("open data")
+input = np.genfromtxt('training_data.csv')
+print("opening", input.shape)
+print(input[3])
